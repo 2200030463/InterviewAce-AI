@@ -1,0 +1,94 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isResourceOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isCreatingOwnData() {
+      return isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── 1. Users Collection ───────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── 2. User Profiles ──────────────────────────────────────────────────────
+    match /userProfiles/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── 3. User Preferences ───────────────────────────────────────────────────
+    match /userPreferences/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── 4. Resumes Collection ─────────────────────────────────────────────────
+    match /resumes/{resumeId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 5. Resume Analysis Collections ────────────────────────────────────────
+    match /resumeAnalyses/{analysisId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    match /resumeAnalysis/{analysisId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 6. Interviews Collection ──────────────────────────────────────────────
+    match /interviews/{interviewId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 7. Reports Collection ─────────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    match /interviewReports/{reportId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 8. Career Plans Collection ────────────────────────────────────────────
+    match /careerPlans/{planId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 9. Learning Roadmaps Collection ───────────────────────────────────────
+    match /learningRoadmaps/{roadmapId} {
+      allow read, update, delete: if isResourceOwner();
+      allow create: if isCreatingOwnData();
+    }
+
+    // ── 10. Analytics Collection ──────────────────────────────────────────────
+    match /analytics/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── Default: deny any unmatched path ─────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

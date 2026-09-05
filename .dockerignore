@@ -1,0 +1,27 @@
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.npm
+
+# ── Next.js ──────────────────────────────────────────────────
+.next/
+out/
+build/
+
+# ── Environment ──────────────────────────────────────────────
+.env
+.env.local
+.env*.local
+.env.development
+.env.production
+
+# ── Git ───────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Misc ──────────────────────────────────────────────────────
+README.md
+*.md
+.DS_Store
+*.log
+coverage/
+.cache/
