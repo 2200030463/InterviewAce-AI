@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
-  },
+
   images: {
     remotePatterns: [
       {
@@ -19,7 +15,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Prevent Next.js from bundling these — they must run in native Node.js
+
   serverExternalPackages: [
     "firebase-admin",
     "@google-cloud/firestore",
