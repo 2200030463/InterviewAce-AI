@@ -11,27 +11,26 @@ let _storage: Storage | null = null;
 export function isFirebaseAdminConfigured(): boolean {
   return Boolean(
     process.env.FIREBASE_PROJECT_ID &&
-    process.env.FIREBASE_PROJECT_ID !== "your-project-id" &&
     process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_CLIENT_EMAIL !== "firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+    process.env.FIREBASE_PRIVATE_KEY
   );
 }
 
 function getAdminApp(): App | null {
   if (_app) return _app;
 
-  const apps = getApps();
-  if (apps.length > 0) {
-    _app = apps[0];
+  if (getApps().length) {
+    _app = getApp();
     return _app;
   }
 
   try {
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY
-      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-      : undefined;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(
+      /\\n/g,
+      "\n"
+    );
 
-    if (isFirebaseAdminConfigured() && privateKey) {
+    if (isFirebaseAdminConfigured()) {
       _app = initializeApp({
         credential: cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
@@ -41,68 +40,42 @@ function getAdminApp(): App | null {
         storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       });
     } else {
-      // Try default initialization (e.g. Cloud Run default environment service account)
-      _app = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "demo-interviewace",
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      });
+      console.warn("Firebase Admin credentials missing");
+      return null;
     }
-  } catch (error) {
-    console.warn("[Firebase Admin] Init warning (fallback active):", error);
-    if (getApps().length > 0) {
-      _app = getApp();
-    }
-  }
 
-  return _app;
+    return _app;
+  } catch (error) {
+    console.error("Firebase Admin initialization error:", error);
+    return null;
+  }
 }
 
-// Lazy getters — safe to import at build time, only initialize on first call
 export function getAdminDb(): Firestore {
   if (!_db) {
     const app = getAdminApp();
-    _db = app ? getFirestore(app) : getFirestore();
+    if (!app) throw new Error("Firebase Admin not initialized");
+    _db = getFirestore(app);
   }
   return _db;
 }
 
-export function getAdminAuth(): Auth | null {
-  try {
-    if (!_auth) {
-      const app = getAdminApp();
-      _auth = app ? getAuth(app) : getAuth();
-    }
-    return _auth;
-  } catch {
-    return null;
+export function getAdminAuth(): Auth {
+  if (!_auth) {
+    const app = getAdminApp();
+    if (!app) throw new Error("Firebase Admin not initialized");
+    _auth = getAuth(app);
   }
+  return _auth;
 }
 
 export function getAdminStorage(): Storage {
   if (!_storage) {
     const app = getAdminApp();
-    _storage = app ? getStorage(app) : getStorage();
+    if (!app) throw new Error("Firebase Admin not initialized");
+    _storage = getStorage(app);
   }
   return _storage;
 }
 
-// Backward-compatible proxy exports
-export const adminDb = new Proxy({} as Firestore, {
-  get(_t, prop) {
-    return (getAdminDb() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const adminAuth = new Proxy({} as Auth, {
-  get(_t, prop) {
-    const a = getAdminAuth();
-    if (!a) return undefined;
-    return (a as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const adminStorage = new Proxy({} as Storage, {
-  get(_t, prop) {
-    return (getAdminStorage() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+export { getAdminApp };
