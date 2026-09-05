@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 
   images: {
     remotePatterns: [
@@ -20,7 +24,6 @@ const nextConfig: NextConfig = {
     "firebase-admin",
     "@google-cloud/firestore",
     "@google-cloud/storage",
-    "@opentelemetry/api",
     "@google/generative-ai",
   ],
 };
