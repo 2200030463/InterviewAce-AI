@@ -239,10 +239,14 @@ export default function CareerCoachPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unable to parse server response");
+        data = null;
       }
 
-      if (data.success && data.data) {
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Career coach service error (${res.status})`);
+      }
+
+      if (data.data) {
         const botMsg: CareerCoachMessage = {
           id: `bot-${Date.now()}`,
           role: "assistant",

@@ -514,10 +514,14 @@ export default function MockInterviewPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unable to parse server response. Please try again.");
+        data = null;
       }
 
-      if (data.success && data.data) {
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Server responded with status ${res.status}`);
+      }
+
+      if (data.data) {
         const {
           message,
           questionNumber,
@@ -837,10 +841,14 @@ export default function MockInterviewPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unable to parse server response. Please try again.");
+        data = null;
       }
 
-      if (data.success && data.data) {
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Failed to start session (${res.status})`);
+      }
+
+      if (data.data) {
         setInterviewId(data.data.interviewId);
         setTotalQuestions(data.data.totalQuestions || questionCount);
         const welcomeMsg: InterviewMessage = {
@@ -919,10 +927,14 @@ export default function MockInterviewPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unable to parse server response. Please try again.");
+        data = null;
       }
 
-      if (data.success && data.data) {
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Evaluation failed (${res.status})`);
+      }
+
+      if (data.data) {
         setEvaluation(data.data);
         setPhase("results");
         toast.success("AI Candidate Evaluation Scorecard generated & saved to Firestore! 🎉");

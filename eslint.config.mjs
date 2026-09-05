@@ -5,5 +5,17 @@ const compat = new FlatCompat({
 });
 
 export default [
-  ...compat.extends("next/core-web-vitals.js"),
+  {
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "node_modules/**",
+      "next-env.d.ts",
+      "*.config.js",
+      "*.config.mjs",
+      "*.config.ts",
+    ],
+  },
+  ...compat.extends("next/core-web-vitals"),
 ];

@@ -156,11 +156,11 @@ export default function CareerPlannerPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Failed to parse response. Retrying with domain synthesis.");
+        data = null;
       }
 
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate plan");
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Career Intelligence synthesis failed (${res.status})`);
       }
 
       setPlan(data.data);

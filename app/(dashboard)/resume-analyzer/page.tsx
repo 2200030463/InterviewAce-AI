@@ -135,15 +135,15 @@ export default function ResumeAnalyzerPage() {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unable to parse server response. Please try again.");
+        data = null;
       }
 
-      if (data.success && data.data) {
-        setAnalysis(data.data);
-        toast.success("Resume audit complete! Comprehensive ATS scorecard computed.");
-      } else {
-        throw new Error(data.error || "Analysis failed");
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Resume audit failed (${res.status})`);
       }
+
+      setAnalysis(data.data);
+      toast.success("Resume audit complete! Comprehensive ATS scorecard computed.");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Analysis failed";
       toast.error(msg);

@@ -66,16 +66,23 @@ export default function LearningRoadmapPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
-      if (data.success) {
-        setRoadmap(data.data);
-        toast.success("Your personalized roadmap is ready! 🗺️");
-      } else {
-        throw new Error(data.error);
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
       }
-    } catch (err) {
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Roadmap generation error (${res.status})`);
+      }
+
+      setRoadmap(data.data);
+      toast.success("Your personalized roadmap is ready! 🗺️");
+    } catch (err: unknown) {
       console.error(err);
-      toast.error("Failed to generate roadmap. Please try again.");
+      const msg = err instanceof Error ? err.message : "Failed to generate roadmap. Please try again.";
+      toast.error(msg);
     } finally {
       setGenerating(false);
     }
