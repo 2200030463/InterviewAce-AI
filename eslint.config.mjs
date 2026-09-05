@@ -5,5 +5,5 @@ const compat = new FlatCompat({
 });
 
 export default [
-  ...compat.extends("next/core-web-vitals"),
+  ...compat.extends("next/core-web-vitals.js"),
 ];
